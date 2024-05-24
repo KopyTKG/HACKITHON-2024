@@ -1,36 +1,57 @@
 import PyPDF2
-import os
 import requests
+import tempfile
+import os
 
-# Hardcoded URL and file path
-url = "https://www.hzscr.cz/soubor/vyrocni-zprava-2019-podle-106-pdf.aspx"
-file_path = "C:/Users/adaml/Desktop/hackithon_2024/data/vyrocni_zprava_2019.pdf"
+def download_and_extract_pdf_text(url):
+    """
+    Downloads a PDF from the given URL, extracts text from it, and returns the text.
 
-# Download the file
-response = requests.get(url)
+    :param url: The URL of the PDF to download.
+    :return: The extracted text from the PDF.
+    """
+    # Download the file
+    response = requests.get(url)
 
-if response.status_code == 200:
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    # Write the content to the file
-    with open(file_path, 'wb') as f:
-        f.write(response.content)
-    print("File downloaded successfully.")
-else:
-    print("Failed to download file.")
+    if response.status_code == 200:
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(response.content)
+            temp_file_path = temp_file.name
 
-# Read the downloaded file
-with open(file_path, 'rb') as file:
-    # Create a PDF file reader object
-    pdf_reader = PyPDF2.PdfReader(file)
+        print("File downloaded successfully to temporary file.")
 
-    # Get the total number of pages in the PDF
-    num_pages = len(pdf_reader.pages)
+        try:
+            # Read the temporary file
+            with open(temp_file_path, 'rb') as file:
+                # Create a PDF file reader object
+                pdf_reader = PyPDF2.PdfReader(file)
 
-    # Iterate through each page and extract text
-    for page_num in range(num_pages):
-        page = pdf_reader.pages[page_num]
-        text = page.extract_text()
+                # Get the total number of pages in the PDF
+                num_pages = len(pdf_reader.pages)
 
-        # Print the text from the current page
-        print("Page", page_num + 1, ":", text)
+                # Extract text from each page and store it in a list
+                extracted_text = []
+                for page_num in range(num_pages):
+                    page = pdf_reader.pages[page_num]
+                    text = page.extract_text()
+                    extracted_text.append(text)
+
+            # Combine all the extracted text into a single string
+            full_text = "\n".join(extracted_text)
+
+        finally:
+            # Delete the temporary file
+            os.remove(temp_file_path)
+            print("Temporary file deleted.")
+
+        return full_text
+    else:
+        print("Failed to download file.")
+        return None
+
+# Example usage
+url = "https://www.hzscr.cz/soubor/rocni-zprava-o-stavu-po-v-pardubickem-kraji-za-rok-2019-pdf.aspx"
+pdf_text = download_and_extract_pdf_text(url)
+if pdf_text:
+    print(pdf_text)
