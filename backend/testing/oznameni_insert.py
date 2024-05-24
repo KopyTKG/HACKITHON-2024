@@ -26,22 +26,22 @@ def extract_info_from_json(file_path):
             nazev = info.get('název', {}).get('cs', None)
             url = info.get('url', None)
             vyveseni = info.get('vyvěšení', {})
-            dat_vyveseni = vyveseni.get('datum', None)
+            datum_vyveseni = vyveseni.get('datum', None)
             if vyveseni.get('nespecifikovaný', False):
-                dat_vyveseni = None
+                datum_vyveseni = None
             
             relevantni_do = info.get('relevantní_do', {})
-            dat_relevantni_do = relevantni_do.get('datum', None)
+            datum_relevance = relevantni_do.get('datum', None)
             if relevantni_do.get('nespecifikovany', False):
-                dat_relevantni_do = None
+                datum_relevance = None
             
             if id_info and nazev:
                 result.append({
                     'id_info': id_info,
                     'nazev': nazev,
                     'url': url,
-                    'dat_vyveseni': dat_vyveseni,
-                    'dat_relevantni_do': dat_relevantni_do
+                    'datum_vyveseni': datum_vyveseni,
+                    'datum_relevance': datum_relevance
                 })
 
     return result
@@ -52,9 +52,9 @@ def generate_sql_inserts(data, output_file):
             id_info = record['id_info']
             nazev = record['nazev'].replace("'", "''")  # Escaping single quotes for SQL
             url = record['url']
-            dat_vyveseni = f"'{record['datum_vyveseni']}'" if record['dat_vyveseni'] else 'NULL'
-            dat_relevantni_do = f"'{record['datum_relevantni_do']}'" if record['dat_relevantni_do'] else 'NULL'
-            sql = f"INSERT INTO oznameni (id, nazev, url, dat_vyveseni, dat_relevance, id_urad) VALUES (DEFAULT, '{nazev}', '{url}', {dat_vyveseni}, {dat_relevantni_do}, {id_info});\n"
+            datum_vyveseni = f"'{record['datum_vyveseni']}'" if record['datum_vyveseni'] else 'NULL'
+            datum_relevance = f"'{record['datum_relevance']}'" if record['datum_relevance'] else 'NULL'
+            sql = f"INSERT INTO oznameni (id, nazev, url, datum_vyveseni, datum_relevance, id_urad) VALUES (DEFAULT, '{nazev}', '{url}', {datum_vyveseni}, {datum_relevance}, {id_info});\n"
             file.write(sql)
 
 # Příklad použití
