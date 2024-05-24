@@ -52,8 +52,8 @@ def generate_sql_inserts(data, output_file):
             id_info = record['id_info']
             nazev = record['nazev'].replace("'", "''")  # Escaping single quotes for SQL
             url = record['url']
-            dat_vyveseni = f"'{record['dat_vyveseni']}'" if record['dat_vyveseni'] else 'NULL'
-            dat_relevantni_do = f"'{record['dat_relevantni_do']}'" if record['dat_relevantni_do'] else 'NULL'
+            dat_vyveseni = f"'{record['datum_vyveseni']}'" if record['dat_vyveseni'] else 'NULL'
+            dat_relevantni_do = f"'{record['datum_relevantni_do']}'" if record['dat_relevantni_do'] else 'NULL'
             sql = f"INSERT INTO oznameni (id, nazev, url, dat_vyveseni, dat_relevance, id_urad) VALUES (DEFAULT, '{nazev}', '{url}', {dat_vyveseni}, {dat_relevantni_do}, {id_info});\n"
             file.write(sql)
 
