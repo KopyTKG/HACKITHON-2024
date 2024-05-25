@@ -78,20 +78,19 @@ def find_line_with_word(text, word):
         return False
 
 
-
-
 def extract_info_from_json(file_path):
     # Load JSON data from the file
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
-    
+
     result = []
     pattern = re.compile(r'/(\d+)/info/')
-    
+    i = 0
+
     # Iterate through each record in the main data structure
     for record in data:
         informace = record.get('informace', [])
-        
+
         # Iterate through each item in the "informace" array
         for info in informace:
             # Check if info is a dictionary
@@ -101,49 +100,112 @@ def extract_info_from_json(file_path):
                 if iri:
                     match = pattern.search(iri)
                     id_info = match.group(1) if match else None
-
+                nazev = info.get('název', {}).get('cs', None)
+                vyveseni = info.get('vyvěšení', {}).get('datum', None)
+                relevance_1 = info.get('relevantní_do', {}).get('datum', None)
+                id = i
+                if relevance_1:
+                    relevance_1 = False
                 # Check if 'dokument' field exists and if it's a list
                 if 'dokument' in info and isinstance(info['dokument'], list):
                     # Iterate through each item in the 'dokument' list
                     for dokument_item in info['dokument']:
                         # Get the 'url' field from each dokument item
+                        nazev = dokument_item.get('název', {}).get('cs', None)
                         doc_url = dokument_item.get('url', None)
+
                         # Check if all required fields are not None before appending to the result list
                         if id_info and doc_url:
-                            result.append([id_info, doc_url])
+                            result.append([id_info, doc_url, nazev, vyveseni, relevance_1, id, nazev, doc_url])
                 else:
                     # Get the 'url' from the 'dokument' dictionary
                     doc_url = info.get('dokument', {}).get('url', None)
                     # Check if all required fields are not None before appending to the result list
                     if id_info and doc_url:
-                        result.append([id_info, doc_url])
-    
+                        result.append([id_info, doc_url, nazev, vyveseni, relevance_1])
+
+                i += 1
+
     return result
 
+
+def write_result_to_file(file_path, info_list, kraje, kraj_urls):
+    with open(file_path, "w") as file:
+        lines_to_write = []
+        print(info_list)
+        for url_info in info_list:
+            print(url_info[0])
+            kraj = function(url_info[0])
+
+            # id, nazev, url, uredni_deska, datum_vyveseni, datum_relevance
+            file.write(f"INSERT INTO oznameni (id, nazev, url, urad_id, datum_vyveseni, datum_relevance) VALUES ({url_info[5]}, {url_info[2]},  {url_info[1]}, {kraj}, {url_info[3]}, {url_info[4]}),\n")
+
+            #file.write(f"INSERT INTO dokument (id, nazev, url, oznameni_id) VALUES (DEFAULT, {url_info[6]},  {url_info[7]}, {url_info[5]}\n")
+
+
+        #     url = url_info[1]
+        #     for kraj_index, kraj in enumerate(kraje):
+        #
+        #         if kraj in url_info[0]:
+        #             kraj_urls[f'kraj_{kraj_index}'].append(url)
+        #             lines_to_write.append(f"ID: {url_info[0]}, URL: {url}, Kraj: {kraj}\n")
+        #             break  # Once matched, no need to continue checking other regions
+        # file.writelines(lines_to_write)
+
+
+
 # Define the list of 'kraje'
-kraje = ['Karlovar', 'Plze', 'Úste', 'Liber', 'Prah', 'Středo', 'Jiho', 'Králov', 'Pardub', 'Vysočin', 'Jiho', 'Olomou', 'Zlín', 'Morav']
+kraje = ['Karlovar', 'Plze', 'Úste', 'Liber', 'Prah', 'Středo', 'Jiho', 'Králov', 'Pardub', 'Vysočin', 'Jiho', 'Olomou',
+         'Zlín', 'Morav']
+
+data = """
+0 - 10017
+1 - 10018
+2 - 10015
+3 - 10016
+4 - 10014
+5 - 10019
+6 - 10023
+7 - 10020
+8 - 10021
+9 - 10022
+10 - 10024
+11 - 10025
+12 - 10026
+13 - 10027
+"""
+
+# Creating the list of tuples
+data_list = []
+for line in data.strip().split("\n"):
+    name, code = line.split(" - ")
+    data_list.append((name, code))
+
+def function(city):
+    for name, code in data_list:
+        if name == city:
+            return code
+    print('finish')  # Return None if city is not found
+
 
 # Initialize a dictionary to store lists of URLs for each 'kraj'
 kraj_urls = {f'kraj_{i}': [] for i in range(len(kraje))}
 
-file_path = '/home/aerceas/Downloads/ministerstvo_vnitra.json'
+file_path = '/home/sabinaaj/Downloads/pcr.json'
 info_list = extract_info_from_json(file_path)
 
-for url in info_list:
+for url_info in info_list:
     try:
-        text = download_and_extract_pdf_text(url[1])
-        for i, kraj in enumerate(kraje):
+        text = download_and_extract_pdf_text(url_info[1])
+        for kraj_index, kraj in enumerate(kraje):
             if text and kraj in text:
-                kraj_urls[f'kraj_{i}'].append(url[1])
+                kraj_urls[f'kraj_{kraj_index}'].append(url_info[1])
     except Exception as e:
-        print(f"Failed to process URL: {url[1]}")
+        print(f"Failed to process URL: {url_info[1]}")
         traceback.print_exc()
 
-# Printing the lists of URLs for each 'kraj'
-for kraj, urls in kraj_urls.items():
-    print(f"{kraj}: {urls}")
-# Example usage: printing the doc_url for each info item in the info_list
-
+# Writing the result to a file
+write_result_to_file("/home/sabinaaj/Downloads/pcr.txt", info_list, kraje, kraj_urls)
 # pdf_text = download_and_extract_pdf_text(url)
 # print(pdf_text)
 
