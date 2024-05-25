@@ -4,7 +4,7 @@ import PyPDF2
 import requests
 import tempfile
 import os
-
+import traceback
 
 def download_and_extract_pdf_text(url):
     """
@@ -120,16 +120,28 @@ def extract_info_from_json(file_path):
     
     return result
 
-file_path = '/home/aerceas/Downloads/ministerstvo_vnitra.json'
+# Define the list of 'kraje'
 kraje = ['Karlovar', 'Plze', 'Úste', 'Liber', 'Prah', 'Středo', 'Jiho', 'Králov', 'Pardub', 'Vysočin', 'Jiho', 'Olomou', 'Zlín', 'Morav']
+
+# Initialize a dictionary to store lists of URLs for each 'kraj'
+kraj_urls = {f'kraj_{i}': [] for i in range(len(kraje))}
+
+file_path = '/home/aerceas/Downloads/ministerstvo_vnitra.json'
 info_list = extract_info_from_json(file_path)
 
 for url in info_list:
-    text = download_and_extract_pdf_text(url[1])
-    for kraj in kraje:
-        result = find_line_with_word(text, kraj)
-        if result:
-            print(f"Non-false response for '{kraj}': {result}")
+    try:
+        text = download_and_extract_pdf_text(url[1])
+        for i, kraj in enumerate(kraje):
+            if text and kraj in text:
+                kraj_urls[f'kraj_{i}'].append(url[1])
+    except Exception as e:
+        print(f"Failed to process URL: {url[1]}")
+        traceback.print_exc()
+
+# Printing the lists of URLs for each 'kraj'
+for kraj, urls in kraj_urls.items():
+    print(f"{kraj}: {urls}")
 # Example usage: printing the doc_url for each info item in the info_list
 
 # pdf_text = download_and_extract_pdf_text(url)
