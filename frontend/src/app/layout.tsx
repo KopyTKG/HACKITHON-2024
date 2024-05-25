@@ -18,9 +18,10 @@ export default function RootLayout({
 }>) {
  return (
   <html lang="en">
+   <link rel="icon" href="/logo.png" type="image/png" sizes="32x32" />
    <body
     className={
-     GeistSans.className + ' dark:bg-stone-900 dark:text-stone-100 text-stone-900 bg-stone-100'
+     GeistSans.className + ' dark:bg-stone-900 dark:text-stone-100 text-stone-900 bg-stone-100 dark'
     }>
     <Navbar />
     <Providers>{children}</Providers>

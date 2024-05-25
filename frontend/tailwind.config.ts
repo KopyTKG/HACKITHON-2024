@@ -18,6 +18,9 @@ const config = {
    },
   },
   extend: {
+   scale: {
+    '101': '1.01',
+   },
    keyframes: {
     'accordion-down': {
      from: { height: '0' },
