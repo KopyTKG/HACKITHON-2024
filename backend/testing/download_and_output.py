@@ -1,4 +1,3 @@
-import re
 import PyPDF2
 import requests
 import tempfile
@@ -51,34 +50,8 @@ def download_and_extract_pdf_text(url):
         print("Failed to download file.")
         return None
 
-
-import re
-import requests
-
-def find_line_with_word(text, word):
-    # Create a regex pattern to match any occurrence of the word
-    pattern = re.compile(re.escape(word), re.IGNORECASE | re.DOTALL)
-    
-    # Search for the pattern in the text
-    match = pattern.search(text)
-    
-    if match:
-        # If a match is found, return the entire line
-        start_index = text.rfind('\n', 0, match.start()) + 1
-        end_index = text.find('\n', match.end())
-        line = text[start_index:end_index]
-        return line
-    else:
-        # If no match is found, return False
-        return False
-
-kraje = ['Karlovar', 'Plze', 'Úste', 'Liber', 'Prah', 'Středo', 'Jiho', 'Králov', 'Pardub', 'Vysočin', 'Jiho', 'Olomou', 'Zlín', 'Morav']
-
-
-url = "https://www.mvcr.cz/soubor/sbirka-jihomoravskeho-kraje-pomoc-obcim-jihomoravskeho-kraje-zasazenym-dne-24-6-2021-extremnimi-bourkami-a-zmirneni-skodlivych-nasledku-na-zdravi-majetku-a-zivotnim-prostredi.aspx"
+# Example usage
+url = "https://www.hzscr.cz/soubor/rocni-zprava-o-stavu-po-v-pardubickem-kraji-za-rok-2019-pdf.aspx"
 pdf_text = download_and_extract_pdf_text(url)
-
-for kraj in kraje:
-    result = find_line_with_word(pdf_text, kraj)
-    if result:
-        print(f"Non-false response for '{kraj}': {result}")
+if pdf_text:
+    print(pdf_text)

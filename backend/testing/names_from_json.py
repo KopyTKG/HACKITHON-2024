@@ -31,7 +31,7 @@ def extract_info_from_json(file_path):
     return result
 
 # Použití funkce s daným souborem
-file_path = '/home/aerceas/Downloads/hzs.json'
+file_path = '/home/alex/Documents/GitHub/HACKITHON-2024/backend/testing/response_1716582009870.json'
 info_list = extract_info_from_json(file_path)
 
 # Výpis výsledku
