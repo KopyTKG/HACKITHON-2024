@@ -1,11 +1,25 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, select 
 from sqlalchemy.orm import sessionmaker
 from models import Urad, Base
 from schema import UradModel
 import requests
+import psycopg2
 # Create FastAPI instance
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+conn = psycopg2.connect('dbname=postgres user=postgres password=BeicfkeCYmrolGsYgFOXkUawuesjkcYt host=viaduct.proxy.rlwy.net port=51943')
+cur = conn.cursor()
 
 # Database connection
 DATABASE_URL = "postgresql://postgres:BeicfkeCYmrolGsYgFOXkUawuesjkcYt@viaduct.proxy.rlwy.net:51943/postgres"
@@ -16,10 +30,14 @@ Base.metadata.create_all(bind=engine)
 
 @app.get("/map/")
 async def read_item():
-    with SessionLocal() as session:
-        uredni_desky = session.query(Urad.nazev).limit(10).all() 
-        results = [nazev for nazev, in uredni_desky] 
-        return {"name": "uredni_desky", "results": results}
+    sql = "SELECT nazev, url, lat, lon FROM urad"
+    cur.execute(sql)
+    results = cur.fetchall()
+    export = []
+    for row in results:
+        if row[2] is not None and row[3] is not None:
+            export.append({"name": row[0], "url": row[1], "coordinates": [row[3], row[2]]})
+    return export
 
 @app.get("/urad/{urad_id}", response_model=UradModel)
 def read_urad(urad_id: int):

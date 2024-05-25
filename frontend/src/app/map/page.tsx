@@ -23,12 +23,14 @@ export default function MapView() {
  React.useEffect(() => {
   const loadData = async () => {
    // Assuming you have a function to fetch JSON data
-   const coordinateData = await fetch(`${process.env.NEXT_PUBLIC_HOSTURL}/api`, {
+   const coordinateData = await fetch(`${process.env.NEXT_PUBLIC_API}/map/`, {
     method: 'GET',
     headers: {
-     'Content-Type': 'application/json',
+     'Access-Control-Allow-Origin': '*',
     },
-   }) // F
+   })
+   console.log(coordinateData)
+
    if (!coordinateData) {
     return
    }
