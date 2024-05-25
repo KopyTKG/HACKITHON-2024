@@ -23,7 +23,7 @@ def extract_info_from_json(file_path):
                 else:
                     id_info = None
 
-            název = info.get('název', {}).get('cs', None)
+            název = info.get('url', {})
             
             if id_info and název:
                 result.append([id_info, název])
@@ -31,7 +31,7 @@ def extract_info_from_json(file_path):
     return result
 
 # Použití funkce s daným souborem
-file_path = '/home/alex/Documents/GitHub/HACKITHON-2024/backend/testing/response_1716582009870.json'
+file_path = '/home/aerceas/Downloads/hzs.json'
 info_list = extract_info_from_json(file_path)
 
 # Výpis výsledku
