@@ -2,10 +2,12 @@
 import React from 'react'
 import DeckGL from '@deck.gl/react'
 import { Map } from 'react-map-gl/maplibre'
+import Link from 'next/link'
 import { GeoJsonLayer, IconLayer } from '@deck.gl/layers'
+import type { PickingInfo, MapViewState } from '@deck.gl/core'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import * as cz from '@/assets/cz.json'
-import IconClusterLayer from '@/layers/icon-cluster-layer'
+import IconClusterLayer, { IconClusterLayerPickingInfo } from '@/layers/icon-cluster-layer'
 
 const INITIAL_VIEW_STATE = {
  longitude: 15.3366,
@@ -13,12 +15,80 @@ const INITIAL_VIEW_STATE = {
  zoom: 7,
 }
 
+type Deska = {
+ coordinates: [longitude: number, latitude: number]
+ name: string
+ url: string
+}
+
+function renderTooltip(info: IconClusterLayerPickingInfo<Deska>) {
+ const { object, objects, x, y } = info
+
+ if (objects) {
+  return (
+   <div className="mt-12 max-h-[95vh] overflow-y-scroll">
+    {objects.map(({ name, url }) => {
+     return (
+      <div key={name} className="max-w-[10rem] h-20 bg-stone-300 text-black">
+       <h5 className="text-md">{name}</h5>
+       <Link href={url} target="_blank" rel="noreferrer" className="text-sm">
+        Link
+       </Link>
+      </div>
+     )
+    })}
+   </div>
+  )
+ }
+
+ if (!object) {
+  return null
+ }
+
+ return (
+  'cluster' in object &&
+  object.cluster && (
+   <div className="tooltip" style={{ left: x, top: y }}>
+    {object.point_count} records
+   </div>
+  )
+ )
+}
+
 export default function MapView() {
  const [mapStyle, setMapStyle] = React.useState(
   'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
  )
  const [geojson, setGeojson] = React.useState(cz)
+ const [data, setData] = React.useState<Deska[]>([])
  const [layers, setLayers] = React.useState<any[]>([])
+ const [hoverInfo, setHoverInfo] = React.useState<IconClusterLayerPickingInfo<Meterite> | null>(
+  null,
+ )
+
+ const layerProps: IconLayerProps<Deska> = {
+  id: 'icon',
+  data,
+  pickable: true,
+  getPosition: (d) => d.coordinates,
+  iconAtlas: '/location-icon-atlas.png',
+  iconMapping: '/location-icon-mapping.json',
+ }
+
+ const hideTooltip = React.useCallback(() => {
+  setHoverInfo(null)
+ }, [])
+
+ const expandTooltip = React.useCallback((info: PickingInfo) => {
+  if (info.picked) {
+   setHoverInfo(info)
+  } else {
+   setHoverInfo(null)
+  }
+ }, [])
+ if (hoverInfo === null || !hoverInfo.objects) {
+  layerProps.onHover = setHoverInfo
+ }
 
  React.useEffect(() => {
   const loadData = async () => {
@@ -34,7 +104,9 @@ export default function MapView() {
    if (!coordinateData) {
     return
    }
-   updateLayers(await coordinateData.json())
+   const tmp = await coordinateData.json()
+   setData(tmp)
+   updateLayers(tmp)
   }
 
   loadData()
@@ -81,8 +153,14 @@ export default function MapView() {
 
  return (
   <main className="w-screen h-[95vh] mt-10">
-   <DeckGL initialViewState={INITIAL_VIEW_STATE} controller={true} layers={layers}>
+   <DeckGL
+    initialViewState={INITIAL_VIEW_STATE}
+    controller={true}
+    layers={layers}
+    onViewStateChange={hideTooltip}
+    onClick={expandTooltip}>
     <Map reuseMaps mapStyle={mapStyle} />
+    {hoverInfo && renderTooltip(hoverInfo)}
    </DeckGL>
   </main>
  )
