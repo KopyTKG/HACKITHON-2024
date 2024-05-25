@@ -1,5 +1,4 @@
 'use client'
-import React from 'react'
 import Icon from '@/components/icon'
 
 export default function Dokument({

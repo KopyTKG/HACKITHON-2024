@@ -1,9 +1,10 @@
 'use client'
-import React, { Suspense } from 'react'
+import React from 'react'
 import { useSearchParams } from 'next/navigation'
 import Dokument from '@/components/dokument'
 
 const mockUpAPI = (search: string) => {
+ console.log('Searching for:', search)
  return new Promise((resolve) => {
   setTimeout(() => {
    resolve(
@@ -45,7 +46,7 @@ export default function Search() {
     {dokumenty
      ? dokumenty.map((dokument, i) => <Dokument key={i} {...dokument} />)
      : Array.from({ length: 10 }).map((_, i) => (
-        <div className="w-full h-20 bg-stone-300 dark:bg-stone-700" />
+        <div key={i} className="w-full h-20 bg-stone-300 dark:bg-stone-700" />
        ))}
    </div>
   </main>
