@@ -30,8 +30,16 @@ export default function Search() {
   else setSearch('')
 
   async function fetchData() {
-   const data = await mockUpAPI(tmp)
-   if (data) setDokumenty(data)
+   const data = await fetch(`${process.env.NEXT_PUBLIC_API}/search`, {
+    method: 'POST',
+    headers: {
+     'Content-Type': 'application/json',
+     'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify({ filter: tmp }),
+   })
+
+   if (data) setDokumenty(await data.json())
   }
   fetchData()
  }, [searchParams, setDokumenty, setSearch])
