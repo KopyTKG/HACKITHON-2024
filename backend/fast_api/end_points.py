@@ -4,8 +4,13 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from models import Urad, Base
 from schema import UradModel
+import pydantic
 import requests
 import psycopg2
+
+class Item(pydantic.BaseModel):
+    filter: str
+
 # Create FastAPI instance
 app = FastAPI()
 
@@ -50,25 +55,27 @@ async def read_item():
     return export
 
 @app.post("/search/")
-async def search(item_name: str):
-    if item_name is in filtry:
-        sql = "SELECT urad.nazev, urad.url FROM urad JOIN filter_table ON urad.filter_id = filter_table.id WHERE filter_table.name = %s "
-        cur.execute(sql)
+async def search(item: Item):
+    print(item)
+    if item in filtry:
+        sql = "SELECT o.id, o.nazev, o.url, o.datum_vyveseni FROM oznameni o JOIN kategorie_oznameni ko ON o.id = ko.oznameni_id JOIN kategorie k ON ko.kategorie_id = k.id WHERE k.nazev Like %s"
+        cur.execute(sql, (item.filter,))
         results = cur.fetchall()
         export = []
         for row in results:
-        if row[0] is not None and row[1] is not None:
-            export.append({"name": row[0], "url": row[1]})
-         return export 
+            if row[0] is not None and row[1] is not None:
+                export.append({"doc_id": row[0], "nazev": row[1], "url": row[2], "datum": row[3]})
+        return export 
     else: 
-        query = "SELECT urad.nazev, urad.url FROM urad JOIN filter_table ON urad.filter_id = filter_table.id WHERE urad.nazev = %s"
-        cur.execute(sql)
+        sql = "SELECT o.id, o.nazev, o.url, o.datum_vyveseni FROM oznameni o WHERE o.nazev LIKE %s"
+        cur.execute(sql, (item.filter,))
         results = cur.fetchall()
         export = []
         for row in results:
-        if row[0] is not None and row[1] is not None:
-            export.append({"name": row[0], "url": row[1],})
-         return export
+            if row[0] is not None and row[1] is not None:
+                export.append({"doc_id": row[0], "nazev": row[1], "url": row[2], "datum": row[3]})
+        return export
+
 if __name__ == "__main__":
     import uvicorn
 
