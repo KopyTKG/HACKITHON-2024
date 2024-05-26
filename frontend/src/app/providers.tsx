@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect } from 'react'
 
-export default function Providers({ children }: { children: React.reactnode }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
  useEffect(() => {
   const currentTheme = localStorage.getItem('theme')
   const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches

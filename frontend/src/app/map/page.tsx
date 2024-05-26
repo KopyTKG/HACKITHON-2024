@@ -5,9 +5,15 @@ import { Map } from 'react-map-gl/maplibre'
 import Link from 'next/link'
 import { GeoJsonLayer } from '@deck.gl/layers'
 import type { IconLayerProps } from '@deck.gl/layers'
-import type { PickingInfo } from '@deck.gl/core'
+import type { PickingInfo, MapViewState } from '@deck.gl/core'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import IconClusterLayer, { IconClusterLayerPickingInfo } from '@/layers/icon-cluster-layer'
+
+const INITIAL_VIEW_STATE: MapViewState = {
+ longitude: 15.3366,
+ latitude: 49.7333,
+ zoom: 7,
+}
 
 type Deska = {
  coordinates: [longitude: number, latitude: number]
@@ -142,11 +148,7 @@ export default function MapView() {
  return (
   <main className="w-screen h-[95vh] mt-10">
    <DeckGL
-    initialViewState={{
-     longitude: 15.3366,
-     latitude: 49.7333,
-     zoom: 7,
-    }}
+    initialViewState={INITIAL_VIEW_STATE}
     controller={true}
     layers={layers}
     onViewStateChange={hideTooltip}

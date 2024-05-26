@@ -1,15 +1,20 @@
 'use client'
 import React from 'react'
-import { useSearchParams } from 'next/navigation'
 import Dokument from '@/components/dokument'
+
+type DokumentType = {
+ nazev: string
+ datum: Date
+ doc_id: number
+ url: string
+}
 
 export default function Search() {
  const [search, setSearch] = React.useState('')
- const [dokumenty, setDokumenty] = React.useState([])
-
- const searchParams = useSearchParams()
+ const [dokumenty, setDokumenty] = React.useState(Array<DokumentType>)
 
  React.useEffect(() => {
+  const searchParams = new URLSearchParams(window.location.search)
   const tmp = searchParams.get('s')
   if (tmp) setSearch(tmp)
   else setSearch('')
@@ -27,7 +32,7 @@ export default function Search() {
    if (data) setDokumenty(await data.json())
   }
   fetchData()
- }, [searchParams, setDokumenty, setSearch])
+ }, [setDokumenty, setSearch])
 
  return (
   <main className="mt-10 py-5 px-2 max-w-6xl mx-auto flex flex-col min-h-[95vh] items-center gap-4">
@@ -37,7 +42,15 @@ export default function Search() {
    <div className="w-full h-[1px] bg-stone-400 dark:bg-stone-600" />
    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-2">
     {dokumenty
-     ? dokumenty.map((dokument, i) => <Dokument key={i} {...dokument} />)
+     ? dokumenty.map((dokument: DokumentType, i: number) => (
+        <Dokument
+         key={i}
+         nazev={dokument.nazev}
+         datum={dokument.datum}
+         doc_id={dokument.doc_id}
+         url={dokument.url}
+        />
+       ))
      : Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="w-full h-20 bg-stone-300 dark:bg-stone-700" />
        ))}

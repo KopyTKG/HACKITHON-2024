@@ -10,7 +10,7 @@ export default function Dokument({
 }: {
  nazev: string
  datum: Date
- doc_id: string
+ doc_id: number
  url: string
 }) {
  return (
@@ -24,7 +24,7 @@ export default function Dokument({
     </div>
     <div className="w-full inline-flex items-center justify-between px-2">
      <span className="dark:text-stone-200 text-stone-700 inline-flex gap-[0.4rem] items-center">
-      <Icon name="calendar-days" className="h-5" /> {datum}
+      <Icon name="calendar-days" className="h-5" /> {datum.toDateString()}
      </span>
      <span className="dark:text-stone-200 text-stone-700">{doc_id}</span>
     </div>

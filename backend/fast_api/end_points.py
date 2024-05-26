@@ -1,9 +1,5 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, select 
-from sqlalchemy.orm import sessionmaker
-from models import Urad, Base
-from schema import UradModel
 import pydantic
 import requests
 import psycopg2
@@ -23,26 +19,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-filtry = ["Oznámení", "Rozhodnutí", "Stanovení", "vyhláška", "dražva", "rozpočet", "prodej", "nálezy", "stavební práce", "přerušení dodávek"]
-
-conn = psycopg2.connect('dbname=postgres user=postgres password=postgres host=hackithon_db port=51943')
+filtry = ["oznámení", "rozhodnutí", "stanovení", "vyhláška", "dražva", "rozpočet", "prodej", "nálezy", "stavební práce", "přerušení dodávek"]
+string = "postgres://postgres:postgres@172.28.5.4:51943/postgres"
+conn = psycopg2.connect("host=db dbname=postgres user=postgres password=postgres port=51943")
 cur = conn.cursor()
-
-# Database connection
-DATABASE_URL = "postgresql://postgres:postgres@hackithon_db:51943/postgres"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base.metadata.create_all(bind=engine)
 
 
 @app.get("/urad/{urad_id}", response_model=UradModel)
 def read_urad(urad_id: int):
-    db = SessionLocal()
-    urad = db.query(Urad).filter(Urad.id == urad_id).first()
-    if urad is None:
+    sql = "SELECT * FROM urad WHERE id = %s LIMIT 1;"
+    cur.exeute(sql)
+    results = cur.fetchall()
+    if results is None:
         raise HTTPException(status_code=404, detail="Urad not found")
-    return urad
+    return results
 
 @app.get("/map/")
 async def read_item():
