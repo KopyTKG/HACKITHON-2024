@@ -3,21 +3,6 @@ import React from 'react'
 import { useSearchParams } from 'next/navigation'
 import Dokument from '@/components/dokument'
 
-const mockUpAPI = (search: string) => {
- console.log('Searching for:', search)
- return new Promise((resolve) => {
-  setTimeout(() => {
-   resolve(
-    Array.from({ length: 10 }).map((_, i) => ({
-     nazev: `Název dokumentu ${i}`,
-     datum: new Date(),
-     doc_id: `${i}`,
-    })),
-   )
-  }, 5000)
- })
-}
-
 export default function Search() {
  const [search, setSearch] = React.useState('')
  const [dokumenty, setDokumenty] = React.useState([])

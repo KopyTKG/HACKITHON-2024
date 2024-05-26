@@ -1,0 +1,38 @@
+name: deska_search_engine
+
+services:
+  database:
+    image: postgres
+    container_name: hackithon_db
+    restart: unless-stopped
+    ports:
+      - 51943:5432
+    environment:
+      PGPASSWORD: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./database/db/pg_dump.sql:/docker-entrypoint-initdb.d/seed.sql
+      - ./database/data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: backend/
+    container_name: hackithon_fastapi
+    restart: unless-stopped
+    ports:
+      - 9999:9999
+    depends_on:
+      - database
+  
+  frontend:
+    build: 
+      context: frontend/
+    container_name: hackithon_nextjs
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+      - database

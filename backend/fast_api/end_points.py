@@ -22,13 +22,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-filtry = ["Oznámení", "Rozhodnutí", "Stanovení", "vyhláška", "dražva", "rozpočet", "prodej", "nálezy", "stavební_práce", "přerušení dodávek"]
 
-conn = psycopg2.connect('dbname=postgres user=postgres password=BeicfkeCYmrolGsYgFOXkUawuesjkcYt host=viaduct.proxy.rlwy.net port=51943')
+filtry = ["Oznámení", "Rozhodnutí", "Stanovení", "vyhláška", "dražva", "rozpočet", "prodej", "nálezy", "stavební práce", "přerušení dodávek"]
+
+conn = psycopg2.connect('dbname=postgres user=postgres password=postgres host=hackithon_db port=51943')
 cur = conn.cursor()
 
 # Database connection
-DATABASE_URL = "postgresql://postgres:BeicfkeCYmrolGsYgFOXkUawuesjkcYt@viaduct.proxy.rlwy.net:51943/postgres"
+DATABASE_URL = "postgresql://postgres:postgres@hackithon_db:51943/postgres"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

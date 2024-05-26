@@ -3,17 +3,11 @@ import React from 'react'
 import DeckGL from '@deck.gl/react'
 import { Map } from 'react-map-gl/maplibre'
 import Link from 'next/link'
-import { GeoJsonLayer, IconLayer } from '@deck.gl/layers'
-import type { PickingInfo, MapViewState } from '@deck.gl/core'
+import { GeoJsonLayer } from '@deck.gl/layers'
+import type { IconLayerProps } from '@deck.gl/layers'
+import type { PickingInfo } from '@deck.gl/core'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import * as cz from '@/assets/cz.json'
 import IconClusterLayer, { IconClusterLayerPickingInfo } from '@/layers/icon-cluster-layer'
-
-const INITIAL_VIEW_STATE = {
- longitude: 15.3366,
- latitude: 49.7333,
- zoom: 7,
-}
 
 type Deska = {
  coordinates: [longitude: number, latitude: number]
@@ -59,12 +53,9 @@ export default function MapView() {
  const [mapStyle, setMapStyle] = React.useState(
   'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
  )
- const [geojson, setGeojson] = React.useState(cz)
  const [data, setData] = React.useState<Deska[]>([])
  const [layers, setLayers] = React.useState<any[]>([])
- const [hoverInfo, setHoverInfo] = React.useState<IconClusterLayerPickingInfo<Meterite> | null>(
-  null,
- )
+ const [hoverInfo, setHoverInfo] = React.useState<IconClusterLayerPickingInfo<Deska> | null>(null)
 
  const layerProps: IconLayerProps<Deska> = {
   id: 'icon',
@@ -90,32 +81,11 @@ export default function MapView() {
   layerProps.onHover = setHoverInfo
  }
 
- React.useEffect(() => {
-  const loadData = async () => {
-   // Assuming you have a function to fetch JSON data
-   const coordinateData = await fetch(`${process.env.NEXT_PUBLIC_API}/map/`, {
-    method: 'GET',
-    headers: {
-     'Access-Control-Allow-Origin': '*',
-    },
-   })
-   console.log(coordinateData)
-
-   if (!coordinateData) {
-    return
-   }
-   const tmp = await coordinateData.json()
-   setData(tmp)
-   updateLayers(tmp)
-  }
-
-  loadData()
- }, [])
  const updateLayers = (coordinateData: any) => {
   setLayers([
    new GeoJsonLayer({
     id: 'CR-map-overlay',
-    data: geojson,
+    data: '/cz.json',
     opacity: 0.05,
     stroked: false,
     filled: true,
@@ -137,6 +107,28 @@ export default function MapView() {
  }
 
  React.useEffect(() => {
+  const loadData = async () => {
+   // Assuming you have a function to fetch JSON data
+   const coordinateData = await fetch(`${process.env.NEXT_PUBLIC_API}/map/`, {
+    method: 'GET',
+    headers: {
+     'Access-Control-Allow-Origin': '*',
+    },
+   })
+   console.log(coordinateData)
+
+   if (!coordinateData) {
+    return
+   }
+   const tmp = await coordinateData.json()
+   setData(tmp)
+   updateLayers(tmp)
+  }
+
+  loadData()
+ }, [updateLayers])
+
+ React.useEffect(() => {
   const currentTheme = localStorage.getItem('theme')
   const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
 
@@ -147,14 +139,14 @@ export default function MapView() {
   }
  }, [])
 
- if (!geojson) {
-  return <div>Loading...</div>
- }
-
  return (
   <main className="w-screen h-[95vh] mt-10">
    <DeckGL
-    initialViewState={INITIAL_VIEW_STATE}
+    initialViewState={{
+     longitude: 15.3366,
+     latitude: 49.7333,
+     zoom: 7,
+    }}
     controller={true}
     layers={layers}
     onViewStateChange={hideTooltip}
