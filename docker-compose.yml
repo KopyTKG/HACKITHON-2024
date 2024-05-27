@@ -1,0 +1,60 @@
+name: deska_search_engine
+
+services:
+ database:
+  image: postgres
+  container_name: hackithon_db
+  restart: unless-stopped
+  ports:
+   - '51943:5432'
+  environment:
+   PGPASSWORD: postgres
+   POSTGRES_PASSWORD: postgres
+   PGDATABASE: postgres
+   POSTGRES_DB: postgres
+  volumes:
+   - ./database/db/pg_dump.sql:/docker-entrypoint-initdb.d/seed.sql
+   - ./database/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+   - ./database/data:/var/lib/postgresql/data
+  networks:
+   hackithon_network:
+    ipv4_address: 172.28.5.4
+
+ backend:
+  build:
+   context: backend/
+  container_name: hackithon_fastapi
+  restart: unless-stopped
+  ports:
+   - '9999:9999'
+  depends_on:
+   - database
+  links:
+   - 'database:db'
+  networks:
+   hackithon_network:
+    ipv4_address: 172.28.5.2
+
+ frontend:
+  build:
+   context: frontend/
+  container_name: hackithon_nextjs
+  restart: unless-stopped
+  ports:
+   - '3000:3000'
+  depends_on:
+   - backend
+   - database
+  networks:
+   hackithon_network:
+    ipv4_address: 172.28.5.3
+
+networks:
+ hackithon_network:
+  name: hackithon
+  attachable: true
+  ipam:
+   config:
+    - subnet: 172.28.0.0/16
+      ip_range: 172.28.5.0/24
+      gateway: 172.28.5.254
