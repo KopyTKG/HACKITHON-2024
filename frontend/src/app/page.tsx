@@ -5,15 +5,15 @@ import Icon from '@/components/icon'
 
 export default function Home() {
  const categories = [
-  'Oznámení',
-  'Rozhodnutí',
-  'Stanovení',
+  'oznámení',
+  'rozhodnutí',
+  'stanovení',
   'vyhláška',
   'dražba',
   'rozpočet',
   'prodej',
   'nálezy',
-  'stavební práce',
+  'stavební nálezy',
   'přerušení dodávek',
  ]
  const randomCategory = () => {

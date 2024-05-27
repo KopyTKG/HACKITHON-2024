@@ -19,23 +19,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-filtry = ["oznámení", "rozhodnutí", "stanovení", "vyhláška", "dražva", "rozpočet", "prodej", "nálezy", "stavební práce", "přerušení dodávek"]
-string = "postgres://postgres:postgres@172.28.5.4:51943/postgres"
-conn = psycopg2.connect("host=db dbname=postgres user=postgres password=postgres port=51943")
-cur = conn.cursor()
+filtry = ["oznámení", "rozhodnutí", "stanovení", "vyhláška", "dražba", "rozpočet", "prodej", "nálezy", "stavební nálezy", "přerušení dodávek"]
+string = "postgres://postgres:postgres@172.28.5.4:5432/postgres"
+
+def get_connection():
+    try:
+        conn = psycopg2.connect(string)
+        return conn
+    except:
+        raise HTTPException(status_code=500, detail="Database connection error")
 
 
-@app.get("/urad/{urad_id}", response_model=UradModel)
+@app.get("/urad/{urad_id}")
 def read_urad(urad_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
     sql = "SELECT * FROM urad WHERE id = %s LIMIT 1;"
     cur.exeute(sql)
     results = cur.fetchall()
     if results is None:
         raise HTTPException(status_code=404, detail="Urad not found")
+
+    conn.close()
     return results
 
 @app.get("/map/")
 async def read_item():
+    conn = get_connection()
+    cur = conn.cursor()
     sql = "SELECT nazev, url, lat, lon FROM urad"
     cur.execute(sql)
     results = cur.fetchall()
@@ -43,28 +54,35 @@ async def read_item():
     for row in results:
         if row[2] is not None and row[3] is not None:
             export.append({"name": row[0], "url": row[1], "coordinates": [row[3], row[2]]})
+
+    conn.close()
     return export
 
-@app.post("/search/")
+@app.post("/search")
 async def search(item: Item):
-    print(item)
-    if item in filtry:
-        sql = "SELECT o.id, o.nazev, o.url, o.datum_vyveseni FROM oznameni o JOIN kategorie_oznameni ko ON o.id = ko.oznameni_id JOIN kategorie k ON ko.kategorie_id = k.id WHERE k.nazev Like %s"
+    conn = get_connection()
+    cur = conn.cursor()
+    if item.filter in filtry:
+        sql = "SELECT o.id, o.nazev, o.url, o.datum_vyveseni FROM oznameni o JOIN kategorie_oznameni ko ON o.id = ko.id_oznameni JOIN kategorie k ON ko.id_kategorie = k.id WHERE k.nazev ILIKE %s"
         cur.execute(sql, (item.filter,))
         results = cur.fetchall()
         export = []
         for row in results:
             if row[0] is not None and row[1] is not None:
-                export.append({"doc_id": row[0], "nazev": row[1], "url": row[2], "datum": row[3]})
+                export.append({"doc_id": row[0], "nazev": row[1], "url": row[2], "datum": row[3].strftime("%Y-%m-%d")})
+
+        conn.close()
         return export 
     else: 
-        sql = "SELECT o.id, o.nazev, o.url, o.datum_vyveseni FROM oznameni o WHERE o.nazev LIKE %s"
+        sql = "SELECT o.id, o.nazev, o.url, o.datum_vyveseni FROM oznameni o WHERE o.nazev ILIKE %s"
         cur.execute(sql, (item.filter,))
         results = cur.fetchall()
         export = []
         for row in results:
             if row[0] is not None and row[1] is not None:
-                export.append({"doc_id": row[0], "nazev": row[1], "url": row[2], "datum": row[3]})
+                export.append({"doc_id": row[0], "nazev": row[1], "url": row[2], "datum": row[3].strftime("%Y-%m-%d")})
+
+        conn.close()
         return export
 
 if __name__ == "__main__":

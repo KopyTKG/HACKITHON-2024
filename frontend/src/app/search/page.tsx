@@ -1,13 +1,6 @@
 'use client'
 import React from 'react'
-import Dokument from '@/components/dokument'
-
-type DokumentType = {
- nazev: string
- datum: Date
- doc_id: number
- url: string
-}
+import Dokument, { DokumentType } from '@/components/dokument'
 
 export default function Search() {
  const [search, setSearch] = React.useState('')
