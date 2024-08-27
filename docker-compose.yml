@@ -12,10 +12,11 @@ services:
    POSTGRES_PASSWORD: postgres
    PGDATABASE: postgres
    POSTGRES_DB: postgres
+   PGDATA: /var/lib/postgresql/new_data
   volumes:
    - ./database/db/pg_dump.sql:/docker-entrypoint-initdb.d/seed.sql
    - ./database/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
-   - ./database/data:/var/lib/postgresql/data
+   - ./database/data:/var/lib/postgresql/new_data
   networks:
    hackithon_network:
     ipv4_address: 172.28.5.4
